@@ -1,35 +1,35 @@
 apply plugin: 'com.android.application'
-apply plugin: 'com.neenbedankt.android-apt'
-apply plugin: 'me.tatarka.retrolambda'
 
 dependencies {
-    compile project(':rxuploader')
+    implementation project(':rxuploader')
 
-    compile rootProject.deps.androidDesign
-    compile rootProject.deps.androidSupportLibrary
-    compile rootProject.deps.androidAnnotations
+    implementation rootProject.deps.androidDesign
+    implementation rootProject.deps.androidSupportLibrary
+    implementation rootProject.deps.androidAnnotations
 
-    compile rootProject.deps.okHttp
-    compile rootProject.deps.okHttpLogging
+    implementation rootProject.deps.okHttp
+    implementation rootProject.deps.okHttpLogging
 
-    compile rootProject.deps.retrofit
-    compile rootProject.deps.retrofitGsonConverter
-    compile rootProject.deps.retrofitRxJavaAdapter
+    implementation rootProject.deps.retrofit
+    implementation rootProject.deps.retrofitGsonConverter
+    implementation rootProject.deps.retrofitRxJavaAdapter
 
-    compile rootProject.deps.rxJava
-    compile rootProject.deps.rxAndroid
+    implementation rootProject.deps.rxJava
+    implementation rootProject.deps.rxAndroid
 
-    compile rootProject.deps.glide
+    implementation rootProject.deps.glide
 
-    compile rootProject.deps.gson
-    provided rootProject.deps.autovalue
-    provided rootProject.deps.autovalueGson
+    implementation rootProject.deps.gson
 
-    compile rootProject.deps.timber
+    annotationProcessor rootProject.deps.autovalue
+    annotationProcessor rootProject.deps.autovalueGsonExt
+    annotationProcessor rootProject.deps.autovalueGsonFactory
+
+    implementation rootProject.deps.timber
 
     // oauth1
-    compile 'se.akerfeldt:okhttp-signpost:1.1.0'
-    compile 'oauth.signpost:signpost-core:1.2.1.2'
+    implementation 'se.akerfeldt:okhttp-signpost:1.1.0'
+    implementation 'oauth.signpost:signpost-core:1.2.1.2'
 }
 
 android {

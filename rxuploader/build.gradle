@@ -1,24 +1,23 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.neenbedankt.android-apt'
-apply plugin: 'me.tatarka.retrolambda'
 
 dependencies {
-    compile rootProject.deps.okHttp
-    compile rootProject.deps.rxJava
-    compile rootProject.deps.rxAndroid
-    compile rootProject.deps.androidAnnotations
-    compile rootProject.deps.gson
+    implementation rootProject.deps.okHttp
+    implementation rootProject.deps.rxJava
+    implementation rootProject.deps.rxAndroid
+    implementation rootProject.deps.androidAnnotations
+    implementation rootProject.deps.gson
 
-    provided rootProject.deps.autovalue
-    provided rootProject.deps.autovalueGson
+    annotationProcessor rootProject.deps.autovalue
+    annotationProcessor rootProject.deps.autovalueGsonExt
+    annotationProcessor rootProject.deps.autovalueGsonFactory
 
-    apt rootProject.deps.autovalue
-    apt rootProject.deps.autovalueGson
+    api rootProject.deps.autovalueAnnotations
+    api rootProject.deps.autovalueGson
 
-    testCompile rootProject.deps.hamcrest
-    testCompile rootProject.deps.junit
-    testCompile rootProject.deps.mockito
-    testCompile rootProject.deps.robolectric
+    testImplementation rootProject.deps.hamcrest
+    testImplementation rootProject.deps.junit
+    testImplementation rootProject.deps.mockito
+    testImplementation rootProject.deps.robolectric
 }
 
 android {
