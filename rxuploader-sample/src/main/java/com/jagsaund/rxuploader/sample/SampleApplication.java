@@ -1,14 +1,17 @@
 package com.jagsaund.rxuploader.sample;
 
 import android.app.Application;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.jagsaund.rxuploader.sample.config.Config;
 import com.jagsaund.rxuploader.sample.service.XOAuthProvider;
+
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Observable;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
-import rx.Completable;
-import rx.Observable;
 import se.akerfeldt.okhttp.signpost.OkHttpOAuthConsumer;
 import timber.log.Timber;
 
@@ -32,17 +35,19 @@ public class SampleApplication extends Application {
 
         return Observable.fromCallable(
                 () -> provider.retrieveRequestToken(consumer, Config.AUTH_CALLBACK_URL))
-                .flatMap(__ -> {
+                .flatMapCompletable(__ -> Completable.fromAction(() -> {
                     try {
                         provider.retrieveAccessToken(consumer, "");
                     } catch (@NonNull Exception e) {
-                        Observable.error(e);
+                        token = null;
+                        secret = null;
+
+                        throw e;
                     }
+
                     token = consumer.getToken();
                     secret = consumer.getTokenSecret();
-                    return Observable.empty();
-                })
-                .toCompletable();
+                }));
     }
 
     @Nullable

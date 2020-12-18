@@ -13,10 +13,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import rx.Observable;
-import rx.observers.TestSubscriber;
-import rx.schedulers.TestScheduler;
-import rx.subjects.TestSubject;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.observers.TestObserver;
+import io.reactivex.rxjava3.schedulers.TestScheduler;
+import io.reactivex.rxjava3.subjects.PublishSubject;
 
 import static com.jagsaund.rxuploader.job.Status.createQueued;
 import static com.jagsaund.rxuploader.job.Status.createSending;
@@ -40,15 +41,15 @@ public class UploadManagerTest {
     @Mock private UploadErrorAdapter uploadErrorAdapter;
 
     private TestScheduler testScheduler;
-    private TestSubject<Status> statusSubject;
-    private TestSubject<Job> jobSubject;
+    private PublishSubject<Status> statusSubject;
     private UploadManager uploadManager;
 
     @Before
     public void setUp() throws Exception {
         testScheduler = new TestScheduler();
-        statusSubject = TestSubject.create(testScheduler);
-        jobSubject = TestSubject.create(testScheduler);
+        statusSubject = PublishSubject.create();
+
+        PublishSubject<Job> jobSubject = PublishSubject.create();
 
         when(uploadInteractor.getAll()).thenReturn(Observable.empty());
 
@@ -76,7 +77,7 @@ public class UploadManagerTest {
                 completed,
         };
         when(uploadInteractor.upload(TEST_JOB.id()))
-                .thenReturn(Observable.from(statuses));
+                .thenReturn(Observable.fromArray(statuses));
 
         when(uploadInteractor.delete(TEST_JOB.id()))
                 .thenReturn(Observable.just(TEST_JOB.withStatus(completed)));
@@ -115,7 +116,7 @@ public class UploadManagerTest {
                 Status.createSending(TEST_JOB.id(), 50),
         };
         when(uploadInteractor.upload(TEST_JOB.id()))
-                .thenReturn(Observable.from(statuses)
+                .thenReturn(Observable.fromArray(statuses)
                         .concatWith(Observable.error(new IOException())));
 
         // when a new job is queued to be uploaded
@@ -176,7 +177,7 @@ public class UploadManagerTest {
         };
 
         when(uploadInteractor.getAll())
-                .thenReturn(Observable.from(Collections.emptyList()));
+                .thenReturn(Observable.fromIterable(Collections.emptyList()));
 
         when(uploadInteractor.save(job1))
                 .thenReturn(Observable.just(job1));
@@ -193,7 +194,7 @@ public class UploadManagerTest {
         // independently control execution of status emissions
         // simulate inherent delay of upload operation
         TestScheduler delayTestScheduler = new TestScheduler();
-        when(uploadInteractor.upload(jobId1)).thenReturn(Observable.from(statusesJob1)
+        when(uploadInteractor.upload(jobId1)).thenReturn(Observable.fromArray(statusesJob1)
                 .concatMap(s -> Observable.just(s)
                         .delay(50, TimeUnit.MILLISECONDS, delayTestScheduler)));
 
@@ -201,7 +202,7 @@ public class UploadManagerTest {
         // after all, we are trying to confirm that all the emissions from the first job will be
         // emitted before the second job begins
         when(uploadInteractor.upload(jobId2))
-                .thenReturn(Observable.from(statusesJob2));
+                .thenReturn(Observable.fromArray(statusesJob2));
 
         final Status queuedJob1 = Status.createQueued(jobId1);
         final Status queuedJob2 = Status.createQueued(jobId2);
@@ -216,10 +217,9 @@ public class UploadManagerTest {
         System.arraycopy(statusesJob2, 0, expected, statusesJob1.length, statusesJob2.length);
 
         // only interested in the sending progress updates
-        final TestSubscriber<Status> ts = TestSubscriber.create();
-        uploadManager.status()
+        final TestObserver<Status> ts = uploadManager.status()
                 .filter(status -> status.statusType() == StatusType.SENDING)
-                .subscribe(ts);
+                .test();
 
         testScheduler.triggerActions();
 
@@ -228,7 +228,7 @@ public class UploadManagerTest {
         delayTestScheduler.triggerActions();
         testScheduler.triggerActions();
 
-        ts.assertValuesAndClear(expected[0]);
+        ts.assertValues(expected[0]);
 
         // confirm that after the next set of delays, still only the first job is emitting status
         // updates
@@ -236,7 +236,7 @@ public class UploadManagerTest {
         delayTestScheduler.triggerActions();
         testScheduler.triggerActions();
 
-        ts.assertValuesAndClear(expected[1], expected[2], expected[3], expected[4]);
+        ts.assertValues(expected[1], expected[2], expected[3], expected[4]);
 
         // complete the delay and verify that the last status is emitted from the first upload
         // operation and then receive the remaining status emissions from the 2nd upload
@@ -269,11 +269,10 @@ public class UploadManagerTest {
                 .build();
 
         when(uploadInteractor.getAll())
-                .thenReturn(Observable.from(Arrays.asList(job1, job2)));
+                .thenReturn(Observable.fromIterable(Arrays.asList(job1, job2)));
 
-        final TestScheduler testScheduler = new TestScheduler();
-        final TestSubject<Status> statusSubject = TestSubject.create(testScheduler);
-        final TestSubject<Job> jobSubject = TestSubject.create(testScheduler);
+        final PublishSubject<Status> statusSubject = PublishSubject.create();
+        final PublishSubject<Job> jobSubject = PublishSubject.create();
 
         new UploadManager(uploadInteractor, uploadErrorAdapter, jobSubject, statusSubject, false);
 

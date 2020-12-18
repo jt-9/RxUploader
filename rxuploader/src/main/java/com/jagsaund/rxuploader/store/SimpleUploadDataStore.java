@@ -17,9 +17,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import rx.Observable;
-import rx.Scheduler;
-import rx.android.schedulers.AndroidSchedulers;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Scheduler;
 
 /**
  * A local data store which persists {@link Job} items to {@link SharedPreferences}. {@link Job}
@@ -72,22 +73,19 @@ public class SimpleUploadDataStore implements UploadDataStore {
     @NonNull
     @Override
     public Observable<Job> getAll() {
-        return Observable.fromCallable(new Callable<Set<Job>>() {
-            @Override
-            public Set<Job> call() throws Exception {
-                final Set<String> jobIdKeys = sharedPreferences
-                        .getStringSet(KEY_JOB_IDS, Collections.emptySet());
-                if (jobIdKeys.isEmpty()) {
-                    return Collections.emptySet();
-                }
-
-                final Set<Job> jobs = new HashSet<>(jobIdKeys.size());
-                for (String key : jobIdKeys) {
-                    jobs.add(getJob(key));
-                }
-                return jobs;
+        return Observable.fromCallable((Callable<Set<Job>>) () -> {
+            final Set<String> jobIdKeys = sharedPreferences
+                    .getStringSet(KEY_JOB_IDS, Collections.emptySet());
+            if (jobIdKeys.isEmpty()) {
+                return Collections.emptySet();
             }
-        }).flatMap(Observable::from).subscribeOn(worker);
+
+            final Set<Job> jobs = new HashSet<>(jobIdKeys.size());
+            for (String key : jobIdKeys) {
+                jobs.add(getJob(key));
+            }
+            return jobs;
+        }).flatMap(Observable::fromIterable).subscribeOn(worker);
     }
 
     @SuppressLint({ "CommitPrefEdits", "ApplySharedPref" })

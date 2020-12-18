@@ -2,8 +2,9 @@ package com.jagsaund.rxuploader.store;
 
 import androidx.annotation.NonNull;
 import java.util.Map;
+
+import io.reactivex.rxjava3.core.Single;
 import okhttp3.MultipartBody;
-import rx.Single;
 
 /**
  * Uploads a multipart entity and optional metadata contents.

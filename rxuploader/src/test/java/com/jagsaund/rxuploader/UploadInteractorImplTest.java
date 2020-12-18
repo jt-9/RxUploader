@@ -14,9 +14,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import rx.Observable;
-import rx.observers.TestSubscriber;
-import rx.schedulers.TestScheduler;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.observers.TestObserver;
+import io.reactivex.rxjava3.schedulers.TestScheduler;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -65,14 +66,13 @@ public class UploadInteractorImplTest {
                 Status.createSending(jobId, 100), Status.createCompleted(jobId, "Finished"),
         };
 
-        when(uploader.upload(job, file)).thenReturn(Observable.from(statuses));
+        when(uploader.upload(job, file)).thenReturn(Observable.fromArray(statuses));
 
-        final TestSubscriber<Status> ts = TestSubscriber.create();
-        uploadInteractor.upload(jobId).subscribe(ts);
+        final TestObserver<Status> ts = uploadInteractor.upload(jobId).test();
 
         testScheduler.triggerActions();
 
-        ts.awaitTerminalEvent(1, TimeUnit.SECONDS);
+        ts.awaitDone(1, TimeUnit.SECONDS);
         ts.assertNoErrors();
         ts.assertValues(statuses);
     }
@@ -82,12 +82,11 @@ public class UploadInteractorImplTest {
         final String jobId = "job-id";
         when(dataStore.get(jobId)).thenReturn(Observable.just(Job.INVALID_JOB));
 
-        final TestSubscriber<Status> ts = TestSubscriber.create();
-        uploadInteractor.upload(jobId).subscribe(ts);
+        final TestObserver<Status> ts = uploadInteractor.upload(jobId).test();
 
         testScheduler.triggerActions();
 
-        ts.awaitTerminalEvent(1, TimeUnit.SECONDS);
+        ts.awaitDone(1, TimeUnit.SECONDS);
         ts.assertNoErrors();
         ts.assertValueCount(1);
         ts.assertValue(Status.createInvalid(jobId));
@@ -108,12 +107,11 @@ public class UploadInteractorImplTest {
 
         when(dataStore.get(jobId)).thenReturn(Observable.just(job));
 
-        final TestSubscriber<Status> ts = TestSubscriber.create();
-        uploadInteractor.upload(jobId).subscribe(ts);
+        final TestObserver<Status> ts = uploadInteractor.upload(jobId).test();
 
         testScheduler.triggerActions();
 
-        ts.awaitTerminalEvent(1, TimeUnit.SECONDS);
+        ts.awaitDone(1, TimeUnit.SECONDS);
         ts.assertError(FileNotFoundException.class);
         ts.assertNoValues();
 
@@ -140,14 +138,13 @@ public class UploadInteractorImplTest {
         };
 
         when(uploader.upload(eq(job), any(File.class))).thenReturn(
-                Observable.from(statuses).concatWith(Observable.error(new IOException("error"))));
+                Observable.fromArray(statuses).concatWith(Observable.error(new IOException("error"))));
 
-        final TestSubscriber<Status> ts = TestSubscriber.create();
-        uploadInteractor.upload(jobId).subscribe(ts);
+        final TestObserver<Status> ts = uploadInteractor.upload(jobId).test();
 
         testScheduler.triggerActions();
 
-        ts.awaitTerminalEvent(1, TimeUnit.SECONDS);
+        ts.awaitDone(1, TimeUnit.SECONDS);
 
         ts.assertValues(statuses);
         ts.assertError(IOException.class);

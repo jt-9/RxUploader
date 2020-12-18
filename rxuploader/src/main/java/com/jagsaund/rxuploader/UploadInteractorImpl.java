@@ -7,9 +7,10 @@ import com.jagsaund.rxuploader.job.Status;
 import com.jagsaund.rxuploader.store.UploadDataStore;
 import java.io.File;
 import java.io.FileNotFoundException;
-import rx.Observable;
-import rx.Scheduler;
-import rx.schedulers.Schedulers;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 class UploadInteractorImpl implements UploadInteractor {
     @NonNull private final Uploader uploader;

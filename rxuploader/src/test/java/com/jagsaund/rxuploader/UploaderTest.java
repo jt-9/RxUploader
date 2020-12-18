@@ -12,6 +12,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.observers.TestObserver;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.subscribers.TestSubscriber;
 import okhttp3.MultipartBody;
 import okio.BufferedSink;
 import okio.Source;
@@ -20,9 +25,6 @@ import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
-import rx.Single;
-import rx.observers.TestSubscriber;
-import rx.schedulers.Schedulers;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
@@ -66,16 +68,15 @@ public class UploaderTest {
             try {
                 data.body().writeTo(sink);
             } catch (@NonNull IOException e) {
-                Single.error(e);
+                return Single.error(e);
             }
             return Single.just("complete");
         };
 
         final Uploader uploader = new Uploader(service, Schedulers.io());
-        final TestSubscriber<Status> ts = TestSubscriber.create();
-        uploader.upload(job, file).subscribe(ts);
+        final TestObserver<Status> ts = uploader.upload(job, file).test();
 
-        ts.awaitTerminalEvent(1, TimeUnit.SECONDS);
+        ts.awaitDone(1, TimeUnit.SECONDS);
         ts.assertNoErrors();
         ts.assertValues(expectedStatus);
     }
@@ -128,10 +129,9 @@ public class UploaderTest {
         };
 
         final Uploader uploader = new Uploader(service, Schedulers.io());
-        final TestSubscriber<Status> ts = TestSubscriber.create();
-        uploader.upload(job, file).subscribe(ts);
+        final TestObserver<Status> ts = uploader.upload(job, file).test();
 
-        ts.awaitTerminalEvent(1, TimeUnit.SECONDS);
+        ts.awaitDone(1, TimeUnit.SECONDS);
         ts.assertError(IOException.class);
         ts.assertValues(expectedStatus);
     }
@@ -153,10 +153,9 @@ public class UploaderTest {
                 .thenThrow(new RuntimeException(""));
 
         final Uploader uploader = new Uploader(service, Schedulers.io());
-        final TestSubscriber<Status> ts = TestSubscriber.create();
-        uploader.upload(job, file).subscribe(ts);
+        final TestObserver<Status> ts = uploader.upload(job, file).test();
 
-        ts.awaitTerminalEvent(1, TimeUnit.SECONDS);
+        ts.awaitDone(1, TimeUnit.SECONDS);
         ts.assertError(RuntimeException.class);
         ts.assertNoValues();
     }
@@ -176,10 +175,9 @@ public class UploaderTest {
         final UploadService service = mock(UploadService.class);
 
         final Uploader uploader = new Uploader(service, Schedulers.io());
-        final TestSubscriber<Status> ts = TestSubscriber.create();
-        uploader.upload(job, file).subscribe(ts);
+        final TestObserver<Status> ts = uploader.upload(job, file).test();
 
-        ts.awaitTerminalEvent(1, TimeUnit.SECONDS);
+        ts.awaitDone(1, TimeUnit.SECONDS);
         ts.assertError(FileNotFoundException.class);
         ts.assertNoValues();
     }

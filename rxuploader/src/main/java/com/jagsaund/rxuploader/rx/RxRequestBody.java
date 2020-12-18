@@ -8,12 +8,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+
+import io.reactivex.rxjava3.core.Emitter;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okio.BufferedSink;
 import okio.Okio;
 import okio.Source;
-import rx.Emitter;
 
 /**
  * Transforms a {@linkplain RequestBody} into one that is reactive and will emit progress updates

@@ -27,10 +27,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
-import rx.subscriptions.CompositeSubscription;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
@@ -44,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private ApiService apiService;
     private UploadRecyclerAdapter adapter;
     private UploadManager uploadManager;
-    private CompositeSubscription subscriptions;
+    private CompositeDisposable disposables;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        subscriptions = new CompositeSubscription();
+        disposables = new CompositeDisposable();
 
         adapter = new UploadRecyclerAdapter(this);
         final RecyclerView jobsListView = (RecyclerView) findViewById(R.id.list_jobs);
@@ -101,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
                 .withUploadErrorAdapter(new PhotoUploadErrorAdapter())
                 .build();
 
-        subscriptions.add(uploadManager.status()
+        disposables.add(uploadManager.status()
                 .flatMap(status -> {
                     final String jobId = status.id();
                     return uploadManager.getJob(jobId)
@@ -134,8 +135,15 @@ public class MainActivity extends AppCompatActivity {
         getPhotos();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        disposables.dispose();
+    }
+
     private void getPhotos() {
-        final Subscription getPhotos = apiService.getPhotos(Config.USERNAME)
+        final Disposable getPhotos = apiService.getPhotos(Config.USERNAME)
                 .map(response -> {
                     final List<PhotoJSONModel> photos = response.photos();
                     final int count = photos.size();
@@ -149,6 +157,6 @@ public class MainActivity extends AppCompatActivity {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(adapter::addAll, error -> Timber.e(error, "Failed to get photos"));
 
-        subscriptions.add(getPhotos);
+        disposables.add(getPhotos);
     }
 }

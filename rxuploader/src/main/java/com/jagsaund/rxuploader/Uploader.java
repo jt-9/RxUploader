@@ -3,21 +3,22 @@ package com.jagsaund.rxuploader;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+
 import com.jagsaund.rxuploader.job.Job;
 import com.jagsaund.rxuploader.job.Status;
 import com.jagsaund.rxuploader.rx.RxRequestBody;
 import com.jagsaund.rxuploader.store.UploadService;
 import com.jagsaund.rxuploader.utils.StringUtils;
+
 import java.io.File;
 import java.io.FileNotFoundException;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
-import rx.Emitter;
-import rx.Observable;
-import rx.Scheduler;
-import rx.SingleSubscriber;
-import rx.Subscription;
-import rx.schedulers.Schedulers;
 
 class Uploader {
     private static final String DEFAULT_FORM_DATA_NAME = "file";
@@ -68,18 +69,18 @@ class Uploader {
     @NonNull
     public Observable<Status> upload(@NonNull Job job, @NonNull File file) {
         final String name = StringUtils.getOrDefault(formDataName, DEFAULT_FORM_DATA_NAME);
-        return new UploadObservable(uploadService, job, file, name)
+        return new UploadObservable<Object>(uploadService, job, file, name)
                 .create()
                 .subscribeOn(worker);
     }
 
-    static class UploadObservable {
-        @NonNull private final UploadService uploadService;
+    static class UploadObservable<T> {
+        @NonNull private final UploadService<T> uploadService;
         @NonNull private final Job job;
         @NonNull private final File file;
         @NonNull private final String formDataName;
 
-        UploadObservable(@NonNull UploadService uploadService, @NonNull Job job, @NonNull File file,
+        UploadObservable(@NonNull UploadService<T> uploadService, @NonNull Job job, @NonNull File file,
                 @NonNull String formDataName) {
             this.uploadService = uploadService;
             this.job = job;
@@ -103,21 +104,14 @@ class Uploader {
 
                 final MultipartBody.Part body =
                         MultipartBody.Part.createFormData(formDataName, filename, fileBody);
-                final Subscription subscription = uploadService.upload(job.metadata(), body)
-                        .subscribe(new SingleSubscriber() {
-                            @Override
-                            public void onSuccess(@NonNull Object response) {
-                                emitter.onNext(Status.createCompleted(jobId, response));
-                                emitter.onCompleted();
-                            }
+                final Disposable d = uploadService.upload(job.metadata(), body)
+                        .subscribe(response -> {
+                            emitter.onNext(Status.createCompleted(jobId, response));
+                            emitter.onComplete();
+                        }, emitter::onError);
 
-                            @Override
-                            public void onError(@NonNull Throwable error) {
-                                emitter.onError(error);
-                            }
-                        });
-                emitter.setSubscription(subscription);
-            }, Emitter.BackpressureMode.LATEST);
+                emitter.setDisposable(d);
+            }/*, BackpressureMode.LATEST*/);
         }
     }
 }

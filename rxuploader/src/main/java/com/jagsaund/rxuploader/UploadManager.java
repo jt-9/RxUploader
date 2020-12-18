@@ -11,12 +11,12 @@ import com.jagsaund.rxuploader.store.SimpleUploadDataStore;
 import com.jagsaund.rxuploader.store.UploadDataStore;
 import com.jagsaund.rxuploader.store.UploadService;
 import java.io.File;
-import rx.Observable;
-import rx.functions.Actions;
-import rx.observables.ConnectableObservable;
-import rx.subjects.PublishSubject;
-import rx.subjects.Subject;
-import rx.subscriptions.CompositeSubscription;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.observables.ConnectableObservable;
+import io.reactivex.rxjava3.subjects.PublishSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 
 /**
  * Manages uploading content to a remote endpoint along with {@linkplain Job} persistence. Uploads
@@ -34,30 +34,30 @@ public class UploadManager {
      * New {@link Job} items to be added are inserted to this subject. Items are persisted to the
      * {@link UploadDataStore} and added to the {@code statusSubject} to be processed for uploads.
      */
-    @NonNull private final Subject<Job, Job> jobSubject;
+    @NonNull private final Subject<Job> jobSubject;
 
     /**
      * Communicates status between clients and business logic.
      */
-    @NonNull private final Subject<Status, Status> statusSubject;
+    @NonNull private final Subject<Status> statusSubject;
 
     /**
      * Consumes from {@code statusSubject} ready to be shared with clients.
      */
     @NonNull private final Observable<Status> statusObservable;
 
-    @NonNull private final CompositeSubscription subscriptions;
+    @NonNull private final CompositeDisposable disposables;
 
     @VisibleForTesting
     UploadManager(@NonNull UploadInteractor uploadInteractor,
-            @NonNull UploadErrorAdapter errorAdapter, @NonNull Subject<Job, Job> jobSubject,
-            @NonNull Subject<Status, Status> statusSubject, boolean deleteRecordOnComplete) {
+            @NonNull UploadErrorAdapter errorAdapter, @NonNull Subject<Job> jobSubject,
+            @NonNull Subject<Status> statusSubject, boolean deleteRecordOnComplete) {
         this.jobSubject = jobSubject;
         this.statusSubject = statusSubject;
 
         this.uploadInteractor = uploadInteractor;
 
-        subscriptions = new CompositeSubscription();
+        disposables = new CompositeDisposable();
 
         // repair any dangling uploads
         // eg. upload was previously in sending state and application terminated before
@@ -72,7 +72,7 @@ public class UploadManager {
         // read items from the job subject
         // save them to the data store
         // enqueue items in to the status subject for processing
-        final Observable<Status> jobQueue = jobSubject.asObservable()
+        final Observable<Status> jobQueue = jobSubject.hide()
                 .filter(job -> job.status().statusType() == StatusType.QUEUED)
                 .flatMap(job -> uploadInteractor
                         .save(job)
@@ -86,7 +86,7 @@ public class UploadManager {
 
         // update the status of incoming status items read from the status subject
         final ConnectableObservable<Status> statusUpdates = statusSubject
-                .asObservable()
+                .hide()
                 .filter(this::canUpdateStatus)
                 .flatMap(uploadInteractor::update)
                 .map(Job::status)
@@ -96,7 +96,6 @@ public class UploadManager {
         // TODO Parameterize upload concurrency. Currently limiting to one upload at a time.
         final Observable<Status> uploadJobs = statusUpdates
                 .filter(status -> status.statusType() == StatusType.QUEUED)
-                .onBackpressureBuffer()
                 .flatMap(status -> {
                     final String jobId = status.id();
                     return uploadInteractor
@@ -127,21 +126,20 @@ public class UploadManager {
         // much for the client to consume -- filter this out and apply a backpressure mode
         // to keep the latest
         final Observable<Status> sending = statusSubject
-                .asObservable()
-                .filter(status -> status.statusType() == StatusType.SENDING)
-                .onBackpressureLatest();
+                .hide()
+                .filter(status -> status.statusType() == StatusType.SENDING);
 
         // merge the sending and remaining updates with the backpressure modes applied
         // this will be used to share with clients
         statusObservable = statusUpdates.mergeWith(sending).share();
 
-        subscriptions.add(jobQueue.subscribe(statusSubject::onNext));
-        subscriptions.add(uploadJobs.subscribe(statusSubject::onNext));
-        subscriptions.add(deleteJobs.subscribe(Actions.empty()));
-        subscriptions.add(deleteJobsFromDB.subscribe(Actions.empty()));
-        subscriptions.add(repair.subscribe(job -> statusSubject.onNext(job.status())));
+        disposables.add(jobQueue.subscribe(statusSubject::onNext));
+        disposables.add(uploadJobs.subscribe(statusSubject::onNext));
+        disposables.add(deleteJobs.subscribe());
+        disposables.add(deleteJobsFromDB.subscribe());
+        disposables.add(repair.subscribe(job -> statusSubject.onNext(job.status())));
 
-        subscriptions.add(statusUpdates.connect());
+        disposables.add(statusUpdates.connect());
     }
 
     /**
@@ -173,7 +171,7 @@ public class UploadManager {
                 .get(jobId)
                 .filter(this::canRetry)
                 .map(job -> Status.createQueued(job.id()));
-        subscriptions.add(observable.subscribe(statusSubject::onNext));
+        disposables.add(observable.subscribe(statusSubject::onNext));
     }
 
     /**
@@ -184,7 +182,7 @@ public class UploadManager {
                 .getAll()
                 .filter(this::canRetry)
                 .map(job -> Status.createQueued(job.id()));
-        subscriptions.add(observable.subscribe(statusSubject::onNext));
+        disposables.add(observable.subscribe(statusSubject::onNext));
     }
 
     /**
@@ -304,8 +302,8 @@ public class UploadManager {
                 throw new IllegalArgumentException("Must provide a valid upload error adapter");
             }
 
-            final Subject<Job, Job> jobSubject = PublishSubject.<Job>create().toSerialized();
-            final Subject<Status, Status> statusSubject =
+            final Subject<Job> jobSubject = PublishSubject.<Job>create().toSerialized();
+            final Subject<Status> statusSubject =
                     PublishSubject.<Status>create().toSerialized();
 
             final Uploader uploader = Uploader.create(uploadService);

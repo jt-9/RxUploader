@@ -3,7 +3,8 @@ package com.jagsaund.rxuploader.store;
 import androidx.annotation.NonNull;
 import com.jagsaund.rxuploader.job.Job;
 import com.jagsaund.rxuploader.job.Status;
-import rx.Observable;
+
+import io.reactivex.rxjava3.core.Observable;
 
 /**
  * A local store for persisting and retrieving {@link Job} items.

@@ -3,7 +3,8 @@ package com.jagsaund.rxuploader;
 import androidx.annotation.NonNull;
 import com.jagsaund.rxuploader.job.Job;
 import com.jagsaund.rxuploader.job.Status;
-import rx.Observable;
+
+import io.reactivex.rxjava3.core.Observable;
 
 public interface UploadInteractor {
     @NonNull

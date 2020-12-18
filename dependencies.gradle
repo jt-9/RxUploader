@@ -11,8 +11,8 @@ rootProject.ext.ANDROID_APP_COMPAT_VERSION = '1.2.0'
 rootProject.ext.ANDROID_ANNOTATION_VERSION = '1.0.0'
 rootProject.ext.ANDROID_MATERIAL_VERSION = '1.3.0-beta01'
 rootProject.ext.OKHTTP_VERSION = '4.9.0'
-rootProject.ext.RX_JAVA_VERSION = '1.2.9'
-rootProject.ext.RX_ANDROID_VERSION = '1.2.1'
+rootProject.ext.RX_JAVA_VERSION = '3.0.8'
+rootProject.ext.RX_ANDROID_VERSION = '3.0.0'
 rootProject.ext.AUTOVALUE_VERSION = '1.7.4'
 rootProject.ext.AUTOVALUE_GSON_VERSION = '1.3.1'
 rootProject.ext.GSON_VERSION = '2.8.6'
@@ -35,8 +35,8 @@ rootProject.ext.deps =
          retrofitGsonConverter  : "com.squareup.retrofit2:converter-gson:$RETROFIT_VERSION",
          retrofitRxJavaAdapter  : "com.squareup.retrofit2:adapter-rxjava:$RETROFIT_VERSION",
          timber                 : "com.jakewharton.timber:timber:$TIMBER_VERSION",
-         rxJava                 : "io.reactivex:rxjava:$RX_JAVA_VERSION",
-         rxAndroid              : "io.reactivex:rxandroid:$RX_ANDROID_VERSION",
+         rxJava                 : "io.reactivex.rxjava3:rxjava:$RX_JAVA_VERSION",
+         rxAndroid              : "io.reactivex.rxjava3:rxandroid:$RX_ANDROID_VERSION",
          autovalue              : "com.google.auto.value:auto-value:$AUTOVALUE_VERSION",
          autovalueAnnotations   : "com.google.auto.value:auto-value-annotations:$AUTOVALUE_VERSION",
          autovalueGson          : "com.ryanharter.auto.value:auto-value-gson-runtime:$AUTOVALUE_GSON_VERSION",
