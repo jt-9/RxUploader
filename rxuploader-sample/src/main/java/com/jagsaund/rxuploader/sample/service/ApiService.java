@@ -1,6 +1,6 @@
 package com.jagsaund.rxuploader.sample.service;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import com.jagsaund.rxuploader.sample.model.wire.PhotosJSONModel;
 import com.jagsaund.rxuploader.sample.model.wire.UploadPhotoJSONModel;
 import okhttp3.MultipartBody;

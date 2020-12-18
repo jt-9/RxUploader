@@ -1,6 +1,6 @@
 package com.jagsaund.rxuploader.sample.service;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import java.io.IOException;
 import okhttp3.Interceptor;
 import okhttp3.Request;

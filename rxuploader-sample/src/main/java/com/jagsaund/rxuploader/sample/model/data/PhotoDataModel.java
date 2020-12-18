@@ -1,7 +1,7 @@
 package com.jagsaund.rxuploader.sample.model.data;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.jagsaund.rxuploader.job.Status;
 import com.jagsaund.rxuploader.sample.model.wire.PhotoJSONModel;
 import com.jagsaund.rxuploader.utils.StringUtils;

@@ -1,6 +1,6 @@
 package com.jagsaund.rxuploader;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import com.jagsaund.rxuploader.job.Job;
 import com.jagsaund.rxuploader.job.Status;
 import rx.Observable;

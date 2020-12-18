@@ -1,6 +1,6 @@
 package com.jagsaund.rxuploader.sample;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import com.jagsaund.rxuploader.UploadErrorAdapter;
 import com.jagsaund.rxuploader.job.ErrorType;
 import java.io.FileNotFoundException;

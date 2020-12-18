@@ -8,7 +8,7 @@
     tools:context="com.jagsaund.rxuploader.sample.MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list_jobs"
         android:layout_width="match_parent"
         android:layout_height="0dp"

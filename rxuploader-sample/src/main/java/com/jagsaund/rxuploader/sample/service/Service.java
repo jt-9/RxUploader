@@ -1,6 +1,6 @@
 package com.jagsaund.rxuploader.sample.service;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import com.google.gson.GsonBuilder;
 import com.jagsaund.rxuploader.sample.config.Config;
 import com.jagsaund.rxuploader.sample.model.wire.JSONModelTypeAdapterFactory;

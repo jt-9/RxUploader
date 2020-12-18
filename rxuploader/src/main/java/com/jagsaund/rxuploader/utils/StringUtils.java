@@ -1,7 +1,7 @@
 package com.jagsaund.rxuploader.utils;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class StringUtils {
     private StringUtils() {

@@ -1,6 +1,6 @@
 package com.jagsaund.rxuploader.sample.model.wire;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import com.google.gson.TypeAdapterFactory;
 import com.ryanharter.auto.value.gson.GsonTypeAdapterFactory;
 

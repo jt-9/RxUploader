@@ -1,8 +1,8 @@
 package com.jagsaund.rxuploader.sample;
 
 import android.app.Application;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.jagsaund.rxuploader.sample.config.Config;
 import com.jagsaund.rxuploader.sample.service.XOAuthProvider;
 import okhttp3.OkHttpClient;

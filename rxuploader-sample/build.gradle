@@ -4,7 +4,7 @@ dependencies {
     implementation project(':rxuploader')
 
     implementation rootProject.deps.androidDesign
-    implementation rootProject.deps.androidSupportLibrary
+    implementation rootProject.deps.androidAppCompat
     implementation rootProject.deps.androidAnnotations
 
     implementation rootProject.deps.okHttp
@@ -29,7 +29,7 @@ dependencies {
 
     // oauth1
     implementation 'se.akerfeldt:okhttp-signpost:1.1.0'
-    implementation 'oauth.signpost:signpost-core:1.2.1.2'
+    implementation 'oauth.signpost:signpost-core:2.1.1'
 }
 
 android {
@@ -41,10 +41,6 @@ android {
         targetSdkVersion rootProject.TARGET_SDK_VERSION
         versionCode rootProject.ext.versionCode
         versionName rootProject.ext.versionName
-    }
-
-    lintOptions {
-        lintConfig file('lint.xml')
     }
 
     compileOptions {

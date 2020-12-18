@@ -1,7 +1,7 @@
 package com.jagsaund.rxuploader.sample.service;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import com.jagsaund.rxuploader.sample.model.wire.PhotoJSONModel;
 import com.jagsaund.rxuploader.sample.model.wire.UploadPhotoJSONModel;
 import com.jagsaund.rxuploader.store.UploadService;

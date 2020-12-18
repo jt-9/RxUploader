@@ -1,7 +1,7 @@
 package com.jagsaund.rxuploader.rx;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import com.jagsaund.rxuploader.job.Status;
 import java.io.File;
 import java.io.FileInputStream;

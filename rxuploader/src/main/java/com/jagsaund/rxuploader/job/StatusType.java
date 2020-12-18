@@ -1,6 +1,6 @@
 package com.jagsaund.rxuploader.job;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public enum StatusType {
     QUEUED("queued"),
