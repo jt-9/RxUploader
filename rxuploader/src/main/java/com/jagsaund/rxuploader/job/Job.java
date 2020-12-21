@@ -11,6 +11,8 @@ import java.util.Map;
 public abstract class Job {
     public static final String INVALID_JOB_ID = "invalid_job_id";
     public static final Map<String, Object> INVALID_METADATA = Collections.emptyMap();
+
+    @NonNull
     public static final Job INVALID_JOB = Job.builder()
             .setId(INVALID_JOB_ID)
             .setStatus(Status.createInvalid(INVALID_JOB_ID))

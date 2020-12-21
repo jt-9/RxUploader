@@ -23,13 +23,13 @@ import okhttp3.RequestBody;
 class Uploader {
     private static final String DEFAULT_FORM_DATA_NAME = "file";
 
-    @NonNull private final UploadService uploadService;
+    @NonNull private final UploadService<?> uploadService;
     @NonNull private final Scheduler worker;
 
     @Nullable private String formDataName;
 
     @VisibleForTesting
-    Uploader(@NonNull UploadService uploadService, @NonNull Scheduler worker) {
+    Uploader(@NonNull UploadService<?> uploadService, @NonNull Scheduler worker) {
         this.uploadService = uploadService;
         this.worker = worker;
     }
@@ -42,7 +42,7 @@ class Uploader {
      * @return A new uploader instance.
      */
     @NonNull
-    static Uploader create(@NonNull UploadService uploadService) {
+    static Uploader create(@NonNull UploadService<?> uploadService) {
         return new Uploader(uploadService, Schedulers.io());
     }
 
@@ -69,18 +69,18 @@ class Uploader {
     @NonNull
     public Observable<Status> upload(@NonNull Job job, @NonNull File file) {
         final String name = StringUtils.getOrDefault(formDataName, DEFAULT_FORM_DATA_NAME);
-        return new UploadObservable<Object>(uploadService, job, file, name)
+        return new UploadObservable(uploadService, job, file, name)
                 .create()
                 .subscribeOn(worker);
     }
 
-    static class UploadObservable<T> {
-        @NonNull private final UploadService<T> uploadService;
+    static class UploadObservable {
+        @NonNull private final UploadService<?> uploadService;
         @NonNull private final Job job;
         @NonNull private final File file;
         @NonNull private final String formDataName;
 
-        UploadObservable(@NonNull UploadService<T> uploadService, @NonNull Job job, @NonNull File file,
+        UploadObservable(@NonNull UploadService<?> uploadService, @NonNull Job job, @NonNull File file,
                 @NonNull String formDataName) {
             this.uploadService = uploadService;
             this.job = job;

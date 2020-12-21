@@ -219,7 +219,7 @@ public class UploadManager {
      * Builder used to construct a new {@link UploadManager} instance.
      */
     public static class Builder {
-        private UploadService uploadService;
+        private UploadService<?> uploadService;
         private UploadDataStore uploadDataStore;
         private UploadErrorAdapter uploadErrorAdapter;
         private boolean deleteRecordOnComplete;
@@ -234,7 +234,7 @@ public class UploadManager {
          * @param uploadService upload's content to a remote endpoint
          * @return Builder
          */
-        public Builder withUploadService(@NonNull UploadService uploadService) {
+        public Builder withUploadService(@NonNull UploadService<?> uploadService) {
             this.uploadService = uploadService;
             return this;
         }
